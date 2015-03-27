@@ -18,15 +18,17 @@
 				   [2, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1,], // 10
 				   [2, 2, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1,], // 11
 				  ]; 
-var wallMatrixCols = wallMatrix.length, wallMatrixRows = wallMatrix[0].length; walls=[];
-var particle1, particle2, particle4, particle4, particle5, particle6;
-var lights,  laserCooked, laserBeam;
-var	light, light1, light2, light3, light4, light5, light6;
+var wallMatrixCols = wallMatrix.length, wallMatrixRows = wallMatrix[0].length; walls=[], wallMeshes=[];
+//var particle1, particle2, particle4, particle4, particle5, particle6;
+//var lights,  laserCooked, laserBeam;
+var	light;
+var light1, light2, light3, light4, light5, light6;
 
 // Global vars
 var WIDTH = window.innerWidth,
 	HEIGHT = window.innerHeight,
 	ASPECT = WIDTH / HEIGHT,
+	//UNITSIZE = 1,
 	UNITSIZE = 10,
 	WALLHEIGHT = UNITSIZE / 2.5,
 	MOVESPEED = 100,
@@ -36,9 +38,9 @@ var WIDTH = window.innerWidth,
 	PROJECTILEDAMAGE = 20;
 	
 
-var scene, cam, renderer, controls, clock, projector, model, skin;
+var scene, cam, renderer, clock, projector, model, skin;
 
-var sphereShape, sphereBody, world, physicsMaterial, walls=[], wallMeshes=[], balls=[], ballMeshes=[], boxes=[], boxMeshes=[];
+var sphereShape, sphereBody, world, physicsMaterial,balls=[], ballMeshes=[], boxes=[], boxMeshes=[];
 var geometry, material, mesh, ground;
 var controls,time = Date.now();
 
@@ -127,6 +129,7 @@ if ( havePointerLock ) {
 
 }
 
+
 initCannon();
 init();
 animate();
@@ -170,6 +173,7 @@ function initCannon()
 	sphereBody = new CANNON.Body({ mass: mass });
 	sphereBody.addShape(sphereShape);
 	sphereBody.position.set(0,1,0);
+	//sphereBody.position.set(0,5,0);
 	sphereBody.linearDamping = 0.9;
 	world.add(sphereBody);
 
@@ -188,10 +192,7 @@ function init()
 	
 	scene = new THREE.Scene();
 	scene.fog = new THREE.Fog( 0x000000, 0, 500 );
-	
-	controls = new PointerLockControls( cam , sphereBody );
-	scene.add( controls.getObject() );
-	
+
 	// Adds lighting for scene
 	 var ambient = new THREE.AmbientLight( 0x111111 );
 	scene.add( ambient );
@@ -211,34 +212,34 @@ function init()
 		light.shadowMapWidth = 2*512;
 		light.shadowMapHeight = 2*512;
 
-		light.shadowCameraVisible = true;
+		//light.shadowCameraVisible = true;
 	}
 	scene.add( light );
-
-	controls = new PointerLockControls( cam , sphereBody );
-	scene.add( controls.getObject() );
-	
 	
 	// Lighting
-	var directionalLight1 = new THREE.DirectionalLight( 0xF7EFBE, 0.7 );
+	 var directionalLight1 = new THREE.DirectionalLight( 0xF7EFBE, 0.7 );
 	directionalLight1.position.set( 0.5, 1, 0.5 );
 	scene.add( directionalLight1 );
 	var directionalLight2 = new THREE.DirectionalLight( 0xF7EFBE, 0.5 );
 	directionalLight2.position.set( -0.5, -1, -0.5 );
 	scene.add( directionalLight2 );
 	
-	scene.add( new THREE.AmbientLight( 0x111111 ) );
-
+	
 	var intensity = 2.5;
 	var distance = 100;
 	var c1 = 0xff0040, c2 = 0x0040ff, c3 = 0x80ff80, c4 = 0xffaa00, c5 = 0x00ffaa, c6 = 0xff1100;
 	//var c1 = 0xffffff, c2 = 0xffffff, c3 = 0xffffff, c4 = 0xffffff, c5 = 0xffffff, c6 = 0xffffff;
-
 	var sphere = new THREE.SphereGeometry( 0.25, 16, 8 );
 
 	light1 = new THREE.PointLight( c1, intensity, distance );
 	light1.add( new THREE.Mesh( sphere, new THREE.MeshBasicMaterial( { color: c1 } ) ) );
 	scene.add( light1 );
+	
+	controls = new PointerLockControls( cam , sphereBody );
+	scene.add( controls.getObject() );
+	
+	
+	
 
 	light2 = new THREE.PointLight( c2, intensity, distance );
 	light2.add( new THREE.Mesh( sphere, new THREE.MeshBasicMaterial( { color: c2 } ) ) );
@@ -262,12 +263,30 @@ function init()
 
 	var dlight = new THREE.DirectionalLight( 0xffffff, 0.1 );
 	dlight.position.set( 0.5, -1, 0 ).normalize();
-	scene.add( dlight );
+	scene.add( dlight ); 
 				
 	
 	// World objects
-	setupScene();
+	//setupScene();
 	
+	 // ground
+   //groundGeometry = new THREE.PlaneGeometry( wallMatrixCols * UNITSIZE * 1.3, wallMatrixCols * UNITSIZE * 1.3, 10, 10 );
+   //groundGeometry.applyMatrix( new THREE.Matrix4().makeRotationX( - Math.PI / 2 ) );
+	
+	//material = new THREE.MeshLambertMaterial( { color: 0xdddddd } );
+	//var groundTexture = THREE.ImageUtils.loadTexture( "images/stone_ground.png" );
+	//groundTexture.repeat.set( 10, 10 );
+	//groundTexture.wrapS = groundTexture.wrapT = THREE.RepeatWrapping;
+	//groundTexture.format = THREE.RGBFormat;
+	//var groundMaterial = new THREE.MeshPhongMaterial( { color: 0xffffff, map: groundTexture } );
+  
+	//ground = new THREE.Mesh( groundGeometry, material );
+	
+	//ground.castShadow = true;
+	//ground.receiveShadow = true;
+	//scene.add( ground );
+	
+
 	
 	renderer = new THREE.WebGLRenderer();
 	renderer.shadowMapEnabled = true;
@@ -276,6 +295,10 @@ function init()
 	renderer.setClearColor( scene.fog.color, 1 );
 	document.body.appendChild(renderer.domElement); // Adds the canvas to the document
 	window.addEventListener( 'resize', onWindowResize, false );
+	
+	
+	// World objects
+	setupScene();
 }
 
 
@@ -305,11 +328,11 @@ function setupScene()
 	var boxShape = new CANNON.Box(halfExtents);
 	var wallGeometry = new THREE.BoxGeometry(halfExtents.x * 2,halfExtents.y * 2,halfExtents.z * 2);
 	
-		var wallMaterials = [
+		 var wallMaterials = [
 		 new THREE.MeshLambertMaterial({/*color: 0x00CCAA,*/map: THREE.ImageUtils.loadTexture('images/light_stone.jpg')}),
 		 new THREE.MeshLambertMaterial({/*color: 0xC5EDA0,*/map: THREE.ImageUtils.loadTexture('images/ornate.jpg')}),
 		 new THREE.MeshLambertMaterial({color: 0xFBEBCD}),
-		 ];
+		 ]; 
 	 // /*
 		// We loop over the map array to create the cubes representing the walls.
 		// Each cube is then placed in position.
@@ -348,8 +371,6 @@ function setupScene()
 		  }
 	 }
 	
-	var sphere = new THREE.SphereGeometry( 0.25, 16, 8 );
-	
 	
 }
 
@@ -363,9 +384,10 @@ var dt = 1/60;
 
 function animate() 
 {
-	requestAnimationFrame( animate );
 	var light_time = Date.now() * 0.00025;
-	var z = 20, d = 150;
+	var d = 150;
+	
+	requestAnimationFrame( animate );
 	if(controls.enabled)
 	{
 		world.step(dt);
@@ -383,6 +405,7 @@ function animate()
 			wallMeshes[i].quaternion.copy(walls[i].quaternion);
 		}
 		
+	
 		
 		light1.position.x = Math.sin( light_time * 0.7 ) * d;
 		light1.position.y = Math.sin( light_time * 0.5 ) * d;
@@ -406,7 +429,7 @@ function animate()
 
 		light6.position.x = Math.cos( light_time * 0.7 ) * d;
 		light6.position.y = Math.cos( light_time * 0.4 ) * d;
-		light6.position.z = Math.cos( light_time * 0.5 ) * d;
+		light6.position.z = Math.cos( light_time * 0.5 ) * d; 
 		
 	
 	}
